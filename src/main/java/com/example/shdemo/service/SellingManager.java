@@ -2,22 +2,25 @@ package com.example.shdemo.service;
 
 import java.util.List;
 
-import com.example.shdemo.domain.Car;
-import com.example.shdemo.domain.Person;
+import com.example.shdemo.domain.FishingRod;
+import com.example.shdemo.domain.Angler;
 
 public interface SellingManager {
 	
-	void addClient(Person person);
-	List<Person> getAllClients();
-	void deleteClient(Person person);
-	Person findClientByPin(String pin);
+	void addAngler(Angler angler);
+	List<Angler> getAllAnglers();
+	void deleteAngler(Angler angler);
+	Angler findAnglerByPhone(String phone);
 	
-	Long addNewCar(Car car);
-	List<Car> getAvailableCars();
-	void disposeCar(Person person, Car car);
-	Car findCarById(Long id);
+	Long addNewFishingRod(FishingRod fishingRod);
+	List<FishingRod> getAvailableFishingRods();
+	void disposeFishingRod(Angler angler, FishingRod fishingRod);
+	FishingRod findFishingRodById(Long id);
 
-	List<Car> getOwnedCars(Person person);
-	void sellCar(Long personId, Long carId);
+	List<FishingRod> getOwnedFishingRods(Angler angler);
+	void sellFishingRod(Long anglerId, Long fishingrodId);
+	void disposeAngler(Angler angler);
+	void clearDb();
+	Angler getAnglerWithMostFishingRods();
 
 }

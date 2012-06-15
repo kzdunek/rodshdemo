@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.shdemo.domain.Car;
-import com.example.shdemo.domain.Person;
+import com.example.shdemo.domain.FishingRod;
+import com.example.shdemo.domain.Angler;
 
 @Component
 @Transactional
@@ -27,93 +27,132 @@ public class SellingMangerHibernateImpl implements SellingManager {
 	}
 	
 	@Override
-	public void addClient(Person person) {
-		person.setId(null);
-		sessionFactory.getCurrentSession().persist(person);
+	public void addAngler(Angler angler) {
+		angler.setId(null);
+		sessionFactory.getCurrentSession().persist(angler);
 	}
 	
 	@Override
-	public void deleteClient(Person person) {
-		person = (Person) sessionFactory.getCurrentSession().get(Person.class,
-				person.getId());
+	public void deleteAngler(Angler angler) {
+		angler = (Angler) sessionFactory.getCurrentSession().get(Angler.class,
+				angler.getId());
 		
-		// lazy loading here
-		for (Car car : person.getCars()) {
-			car.setSold(false);
-			sessionFactory.getCurrentSession().update(car);
+		for (FishingRod fishingRod : angler.getFishingRods()) {
+			fishingRod.setSold(false);
+			sessionFactory.getCurrentSession().update(fishingRod);
 		}
-		sessionFactory.getCurrentSession().delete(person);
+		sessionFactory.getCurrentSession().delete(angler);
 	}
 
 	@Override
-	public List<Car> getOwnedCars(Person person) {
-		person = (Person) sessionFactory.getCurrentSession().get(Person.class,
-				person.getId());
-		// lazy loading here - try this code without (shallow) copying
-		List<Car> cars = new ArrayList<Car>(person.getCars());
-		return cars;
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public List<Person> getAllClients() {
-		return sessionFactory.getCurrentSession().getNamedQuery("person.all")
-				.list();
-	}
-
-	@Override
-	public Person findClientByPin(String pin) {
-		return (Person) sessionFactory.getCurrentSession().getNamedQuery("person.byPin").setString("pin", pin).uniqueResult();
-	}
-
-
-	@Override
-	public Long addNewCar(Car car) {
-		car.setId(null);
-		return (Long) sessionFactory.getCurrentSession().save(car);
-	}
-
-	@Override
-	public void sellCar(Long personId, Long carId) {
-		Person person = (Person) sessionFactory.getCurrentSession().get(
-				Person.class, personId);
-		Car car = (Car) sessionFactory.getCurrentSession()
-				.get(Car.class, carId);
-		car.setSold(true);
-		person.getCars().add(car);
+	public List<FishingRod> getOwnedFishingRods(Angler angler) {
+		angler = (Angler) sessionFactory.getCurrentSession().get(Angler.class,
+				angler.getId());
+		List<FishingRod> fishingRods = new ArrayList<FishingRod>(angler.getFishingRods());
+		return fishingRods;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<Car> getAvailableCars() {
-		return sessionFactory.getCurrentSession().getNamedQuery("car.unsold")
+	public List<Angler> getAllAnglers() {
+		return sessionFactory.getCurrentSession().getNamedQuery("angler.all")
+				.list();
+	}
+
+	@Override
+	public Angler findAnglerByPhone(String phone) {
+		return (Angler) sessionFactory.getCurrentSession().getNamedQuery("angler.byPhone").setString("phone", phone).uniqueResult();
+	}
+
+
+	@Override
+	public Long addNewFishingRod(FishingRod fishingRod) {
+		fishingRod.setId(null);
+		return (Long) sessionFactory.getCurrentSession().save(fishingRod);
+	}
+
+	@Override
+	public void sellFishingRod(Long anglerId, Long fishingRodId) {
+		Angler angler = (Angler) sessionFactory.getCurrentSession().get(
+				Angler.class, anglerId);
+		FishingRod fishingRod = (FishingRod) sessionFactory.getCurrentSession()
+				.get(FishingRod.class, fishingRodId);
+		fishingRod.setSold(true);
+		angler.getFishingRods().add(fishingRod);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public List<FishingRod> getAvailableFishingRods() {
+		return sessionFactory.getCurrentSession().getNamedQuery("fishingrod.unsold")
 				.list();
 	}
 	@Override
-	public void disposeCar(Person person, Car car) {
+	public void disposeFishingRod(Angler angler, FishingRod fishingRod) {
 
-		person = (Person) sessionFactory.getCurrentSession().get(Person.class,
-				person.getId());
-		car = (Car) sessionFactory.getCurrentSession().get(Car.class,
-				car.getId());
+		angler = (Angler) sessionFactory.getCurrentSession().get(Angler.class,
+				angler.getId());
+		fishingRod = (FishingRod) sessionFactory.getCurrentSession().get(FishingRod.class,
+				fishingRod.getId());
 
-		Car toRemove = null;
-		// lazy loading here (person.getCars)
-		for (Car aCar : person.getCars())
-			if (aCar.getId().compareTo(car.getId()) == 0) {
-				toRemove = aCar;
+		FishingRod toRemove = null;
+		
+		for (FishingRod fFishingRod : angler.getFishingRods())
+			if (fFishingRod.getId().equals(fishingRod.getId())) {
+				toRemove = fFishingRod;
 				break;
 			}
 
 		if (toRemove != null)
-			person.getCars().remove(toRemove);
+			angler.getFishingRods().remove(toRemove);
 
-		car.setSold(false);
+		fishingRod.setSold(false);
 	}
 
 	@Override
-	public Car findCarById(Long id) {
-		return (Car) sessionFactory.getCurrentSession().get(Car.class, id);
+	public FishingRod findFishingRodById(Long id) {
+		return (FishingRod) sessionFactory.getCurrentSession().get(FishingRod.class, id);
+	}
+	
+	@Override
+	public void disposeAngler(Angler angler) {
+		angler = (Angler) sessionFactory.getCurrentSession().get(Angler.class,
+				angler.getId());
+		angler.getFishingRods().clear();
+		sessionFactory.getCurrentSession().delete(angler);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void clearDb() {
+		List<Angler> anglers = sessionFactory.getCurrentSession().getNamedQuery("angler.all").list();
+		for(Angler aAngler : anglers) {
+			Angler angler = (Angler) sessionFactory.getCurrentSession().get(Angler.class,
+					aAngler.getId());
+			for (FishingRod fishingRod : angler.getFishingRods()) {
+				fishingRod.setSold(false);
+				sessionFactory.getCurrentSession().update(fishingRod);
+			}
+			sessionFactory.getCurrentSession().delete(angler);
+		}
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public Angler getAnglerWithMostFishingRods() {
+		int count = 0;
+		Angler maxAngler = null;
+		List<Angler> anglers = sessionFactory.getCurrentSession().getNamedQuery("angler.all").list();
+		for(Angler aAngler : anglers) {
+			int i=0;
+			for (FishingRod fishingRod : aAngler.getFishingRods()) {
+				i++;
+			}
+			if(i > count) {
+				count = i;
+				maxAngler = aAngler;
+			}
+		}		
+		return maxAngler;
+	}
 }

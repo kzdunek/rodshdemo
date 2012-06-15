@@ -10,105 +10,161 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+//import org.springframework.transaction.annotation.Transactional;
 
-import com.example.shdemo.domain.Car;
-import com.example.shdemo.domain.Person;
+import com.example.shdemo.domain.FishingRod;
+import com.example.shdemo.domain.Angler;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:/beans.xml" })
+@ContextConfiguration("/beans.xml")
 @TransactionConfiguration(transactionManager = "txManager", defaultRollback = true)
-@Transactional
+//@Transactional
 public class SellingManagerTest {
 
 	@Autowired
 	SellingManager sellingManager;
-
-	private final String NAME_1 = "Bolek";
-	private final String PIN_1 = "1234";
-
-	private final String NAME_2 = "Lolek";
-	private final String PIN_2 = "4321";
-
-	private final String MODEL_1 = "126p";
-	private final String MAKE_1 = "Fiat";
-
-	private final String MODEL_2 = "Mondeo";
-	private final String MAKE_2 = "Ford";
-
+	private final String Kind_1 = "spinning";
+	private final String Kind_2 = "bat";
+	private final String MODEL_1 = "jaxon";
+	private final String MODEL_2 = "dragon";
+	private final String Name_1 = "Maciej";
+	private final String Name_2 = "Adam";
+	private final String Phone_1 = "500214141";
+	private final String Phone_2 = "632145635";
 	@Test
-	public void addClientCheck() {
+	public void addAnglerCheck() {
 
-		List<Person> retrievedClients = sellingManager.getAllClients();
+		List<Angler> retrievedAnglers = sellingManager.getAllAnglers();
 
-		// If there is a client with PIN_1 delete it
-		for (Person client : retrievedClients) {
-			if (client.getPin().equals(PIN_1)) {
-				sellingManager.deleteClient(client);
+		for (Angler Angler : retrievedAnglers) {
+			if (Angler.getPhone().equals(Phone_1)) {
+				sellingManager.deleteAngler(Angler);
 			}
 		}
 
-		Person person = new Person();
-		person.setFirstName(NAME_1);
-		person.setPin(PIN_1);
-		// ... other properties here
+		Angler angler = new Angler();
+		angler.setName(Name_1);
+		angler.setPhone(Phone_1);
 
-		// Pin is Unique
-		sellingManager.addClient(person);
+		sellingManager.addAngler(angler);
 
-		Person retrievedClient = sellingManager.findClientByPin(PIN_1);
+		Angler retrievedAngler = sellingManager.findAnglerByPhone(Phone_1);
 
-		assertEquals(NAME_1, retrievedClient.getFirstName());
-		assertEquals(PIN_1, retrievedClient.getPin());
-		// ... check other properties here
+		assertEquals(Name_1, retrievedAngler.getName());
+		assertEquals(Phone_1, retrievedAngler.getPhone());
 	}
 
 	@Test
-	public void addCarCheck() {
+	public void addFishingRodCheck() {
 
-		Car car = new Car();
-		car.setMake(MAKE_1);
-		car.setModel(MODEL_1);
-		// ... other properties here
+		FishingRod FishingRod = new FishingRod();
+		FishingRod.setKind(Kind_1);
+		FishingRod.setModel(MODEL_1);
 
-		Long carId = sellingManager.addNewCar(car);
+		Long FishingRodId = sellingManager.addNewFishingRod(FishingRod);
 
-		Car retrievedCar = sellingManager.findCarById(carId);
-		assertEquals(MAKE_1, retrievedCar.getMake());
-		assertEquals(MODEL_1, retrievedCar.getModel());
-		// ... check other properties here
+		FishingRod retrievedFishingRod = sellingManager.findFishingRodById(FishingRodId);
+		assertEquals(Kind_1, retrievedFishingRod.getKind());
+		assertEquals(MODEL_1, retrievedFishingRod.getModel());
 
 	}
 
 	@Test
-	public void sellCarCheck() {
+	public void sellFishingRodCheck() {
+		sellingManager.clearDb();
+		Angler person = new Angler();
+		person.setName(Name_2);
+		person.setPhone(Phone_2);
 
-		Person person = new Person();
-		person.setFirstName(NAME_2);
-		person.setPin(PIN_2);
+		sellingManager.addAngler(person);
 
-		sellingManager.addClient(person);
+		Angler retrievedAngler = sellingManager.findAnglerByPhone(Phone_2);
 
-		Person retrievedPerson = sellingManager.findClientByPin(PIN_2);
+		FishingRod FishingRod = new FishingRod();
+		FishingRod.setKind(Kind_2);
+		FishingRod.setModel(MODEL_2);
 
-		Car car = new Car();
-		car.setMake(MAKE_2);
-		car.setModel(MODEL_2);
+		Long FishingRodId = sellingManager.addNewFishingRod(FishingRod);
 
-		Long carId = sellingManager.addNewCar(car);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId);
 
-		sellingManager.sellCar(retrievedPerson.getId(), carId);
+		List<FishingRod> ownedFishingRods = sellingManager.getOwnedFishingRods(retrievedAngler);
 
-		List<Car> ownedCars = sellingManager.getOwnedCars(retrievedPerson);
-
-		assertEquals(1, ownedCars.size());
-		assertEquals(MAKE_2, ownedCars.get(0).getMake());
-		assertEquals(MODEL_2, ownedCars.get(0).getModel());
+		assertEquals(1, ownedFishingRods.size());
+		assertEquals(Kind_2, ownedFishingRods.get(0).getKind());
+		assertEquals(MODEL_2, ownedFishingRods.get(0).getModel());
 	}
 
-	// @Test -
-	public void disposeCarCheck() {
-		// Do it yourself
+	@Test
+	public void disposeFishingRodCheck() {
+		sellingManager.clearDb();
+		Angler Angler = new Angler();
+		Angler.setName(Name_1);
+		Angler.setPhone(Phone_1);
+		sellingManager.addAngler(Angler);
+		FishingRod FishingRod = new FishingRod();
+		FishingRod.setKind(Kind_1);
+		FishingRod.setModel(MODEL_1);
+		Long FishingRodId = sellingManager.addNewFishingRod(FishingRod);
+		Angler retrievedAngler = sellingManager.findAnglerByPhone(Phone_1);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId);
+		List<FishingRod> ownedFishingRods = sellingManager.getOwnedFishingRods(retrievedAngler);
+		assertEquals(1, ownedFishingRods.size());
+		sellingManager.disposeFishingRod(Angler, FishingRod);
+		assertEquals(0, Angler.getFishingRods().size());	
 	}
-
+	@Test
+	public void disposeAnglerCheck() {
+		sellingManager.clearDb();
+		Angler Angler = new Angler();
+		Angler.setName(Name_1);
+		Angler.setPhone(Phone_1);
+		sellingManager.addAngler(Angler);
+		FishingRod FishingRod = new FishingRod();
+		FishingRod.setKind(Kind_1);
+		FishingRod.setModel(MODEL_1);
+		Long FishingRodId = sellingManager.addNewFishingRod(FishingRod);
+		FishingRod FishingRod2 = new FishingRod();
+		FishingRod2.setKind(Kind_2);
+		FishingRod2.setModel(MODEL_2);
+		Long FishingRodId2 = sellingManager.addNewFishingRod(FishingRod2);
+		Angler retrievedAngler = sellingManager.findAnglerByPhone(Phone_1);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId2);
+		sellingManager.disposeAngler(Angler);
+		assertEquals(0, Angler.getFishingRods().size());
+		assertEquals(0, sellingManager.getAllAnglers().size());
+	}
+	@Test
+	public void AnglerMostFishingRods() {
+		sellingManager.clearDb();
+		Angler Angler = new Angler();
+		Angler.setName(Name_1);
+		Angler.setPhone(Phone_1);
+		sellingManager.addAngler(Angler);
+		Angler Angler2 = new Angler();
+		Angler2.setName(Name_2);
+		Angler2.setPhone(Phone_2);
+		sellingManager.addAngler(Angler2);
+		FishingRod FishingRod = new FishingRod();
+		FishingRod.setKind(Kind_1);
+		FishingRod.setModel(MODEL_1);
+		Long FishingRodId = sellingManager.addNewFishingRod(FishingRod);
+		FishingRod FishingRod2 = new FishingRod();
+		FishingRod2.setKind(Kind_2);
+		FishingRod2.setModel(MODEL_2);
+		Long FishingRodId2 = sellingManager.addNewFishingRod(FishingRod2);
+		FishingRod FishingRod3 = new FishingRod();
+		FishingRod3.setKind(Kind_1);
+		FishingRod3.setModel(MODEL_2);
+		Long FishingRodId3 = sellingManager.addNewFishingRod(FishingRod3);
+		Angler retrievedAngler = sellingManager.findAnglerByPhone(Phone_1);
+		Angler retrievedAngler2 = sellingManager.findAnglerByPhone(Phone_2);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId);
+		sellingManager.sellFishingRod(retrievedAngler.getId(), FishingRodId2);
+		sellingManager.sellFishingRod(retrievedAngler2.getId(), FishingRodId3);
+		Angler max = sellingManager.getAnglerWithMostFishingRods();
+		assertEquals(Name_1, max.getName());
+		assertEquals(Phone_1, max.getPhone());
+	}
 }
